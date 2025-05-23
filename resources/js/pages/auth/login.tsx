@@ -36,12 +36,12 @@ export default function Login({ status, canResetPassword }: LoginProps) {
     };
 
     return (
-        <AuthLayout title="Log in to your account" description="Enter your email and password below to log in">
+        <AuthLayout title="Welcome to TaskMaster" description="Enter your email and password below to log in">
             <Head title="Log in" />
 
-            <form className="flex flex-col gap-6" onSubmit={submit}>
-                <div className="grid gap-6">
-                    <div className="grid gap-2">
+            <form className="space-y-6" onSubmit={submit}>
+                <div className="space-y-4">
+                    <div className="space-y-2">
                         <Label htmlFor="email">Email address</Label>
                         <Input
                             id="email"
@@ -57,8 +57,8 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                         <InputError message={errors.email} />
                     </div>
 
-                    <div className="grid gap-2">
-                        <div className="flex items-center">
+                    <div className="space-y-2">
+                        <div className="flex items-center justify-between">
                             <Label htmlFor="password">Password</Label>
                             {canResetPassword && (
                                 <TextLink href={route('password.request')} className="ml-auto text-sm" tabIndex={5}>
