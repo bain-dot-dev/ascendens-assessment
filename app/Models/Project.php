@@ -6,32 +6,31 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
-class Task extends Model
+class Project extends Model
 {
     use HasFactory, HasUuids;
 
     protected $fillable = [
-        'title',
+        'name',
+        'description',
         'status',
-        'priority',
         'dueDate',
-        'project_id',
-        'assignee_id',
+        'owner_id',
     ];
 
-    public function project()
+    public function owner()
     {
-        return $this->belongsTo(Project::class);
+        return $this->belongsTo(User::class, 'owner_id');
     }
 
-    public function assignee()
+    public function members()
     {
-        return $this->belongsTo(User::class, 'assignee_id');
+        return $this->hasMany(ProjectMember::class);
     }
 
-    public function assignments()
+    public function tasks()
     {
-        return $this->hasMany(TaskAssignment::class);
+        return $this->hasMany(Task::class);
     }
 
     public function activityLogs()
