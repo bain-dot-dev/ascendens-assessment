@@ -85,7 +85,7 @@ Ensure your environment meets the following requirements:
 
 10. **Run Migrations**
     ```bash
-   php artisan migrate
+    php artisan migrate
 
 12. **Start the Development Server**
     ```bash
