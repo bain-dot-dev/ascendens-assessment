@@ -53,13 +53,16 @@ Ensure your environment meets the following requirements:
    cd ascendens-assessment
    
 2. **Install Dependencies**
+   ```bash
    composer install
    npm install && npm run build
    
-3. **Set Up Environment File**
+4. **Set Up Environment File**
+   ```bash
    cp .env.example .env
    
-4. **Configure Environment**
+6. **Configure Environment**
+   ```bash
    DB_CONNECTION=your_database_connection
    DB_HOST=your_database_host_name
    DB_PORT=your_database_port
@@ -76,14 +79,17 @@ Ensure your environment meets the following requirements:
    MAIL_FROM_ADDRESS=your_email@example.com
    MAIL_FROM_NAME="${APP_NAME}"
 
-5. **Generate App Key**
+8. **Generate App Key**
+   ```bash
    php artisan key:generate
 
-6. **Run Migrations**
+10. **Run Migrations**
+    ```bash
    php artisan migrate
 
-7. **Start the Development Server**
-   php artisan serve
+12. **Start the Development Server**
+    ```bash
+    php artisan serve
    Visit the app at: http://localhost:8000
 
 👥 Default Access
