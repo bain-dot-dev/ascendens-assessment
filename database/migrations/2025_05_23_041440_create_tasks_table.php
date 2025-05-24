@@ -14,15 +14,13 @@ return new class extends Migration
         Schema::create('tasks', function (Blueprint $table) {
              $table->uuid('id')->primary();
         $table->string('title');
-        $table->text('description')->nullable();
-
-        // Status enum field: pending, done, ongoing
-        $table->enum('status', ['pending', 'done', 'ongoing'])->default('pending');
-
-        $table->date('dueDate')->nullable();
-        $table->uuid('user_id'); // foreign key if you're associating with users
-        $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-
+        $table->enum('status', ['In Progress', 'Completed', 'To Do', 'In Review', 'Cancelled'])->default('To Do');
+        $table->enum('Priority', ['Low', 'Medium', 'High', 'Urgent'])->default('Medium');
+        $table->date('dueDate');
+        $table->uuid('project_id');
+        $table->foreign('project_id')->references('id')->on('projects')->onDelete('cascade');
+        $table->uuid('assignee_id'); // foreign key if you're associating with users
+        $table->foreign('assignee_id')->references('id')->on('users')->onDelete('cascade');
         $table->timestamps();
 
         

@@ -82,9 +82,9 @@ export function ProjectList() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-zinc-600 dark:text-zinc-400">Progress</span>
-                  <span className="text-zinc-100">{project.progress}%</span>
+                  <span className="text-zinc-600 dark:text-zinc-100">{project.progress}%</span>
                 </div>
-                <Progress value={project.progress} className="h-2 bg-zinc-800" />
+                <Progress value={project.progress} className="h-2 bg-zinc-300 dark:bg-zinc-800" />
               </div>
 
               <div className="flex items-center justify-between">
