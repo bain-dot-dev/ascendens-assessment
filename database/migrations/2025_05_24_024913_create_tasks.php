@@ -15,8 +15,8 @@ return new class extends Migration
              $table->uuid('id')->primary();
         $table->string('title');
         $table->enum('status', ['In Progress', 'Completed', 'To Do', 'In Review', 'Cancelled'])->default('To Do');
-        $table->enum('Priority', ['Low', 'Medium', 'High', 'Urgent'])->default('Medium');
-        $table->date('dueDate');
+        $table->enum('priority', ['Low', 'Medium', 'High', 'Urgent'])->default('Medium');
+        $table->date('due_date');
         $table->uuid('project_id');
         $table->foreign('project_id')->references('id')->on('projects')->onDelete('cascade');
         $table->uuid('assignee_id'); // foreign key if you're associating with users

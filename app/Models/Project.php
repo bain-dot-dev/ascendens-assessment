@@ -10,11 +10,16 @@ class Project extends Model
 {
     use HasFactory, HasUuids;
 
+    protected $casts = [
+    'due_date' => 'date',
+];
+
+
     protected $fillable = [
         'name',
         'description',
         'status',
-        'dueDate',
+        'due_date',
         'owner_id',
     ];
 
@@ -37,4 +42,5 @@ class Project extends Model
     {
         return $this->hasMany(ActivityLog::class);
     }
+    
 }
