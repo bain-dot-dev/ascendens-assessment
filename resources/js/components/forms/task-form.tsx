@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 export interface TaskFormData {
     title: string;
     status: 'In Progress' | 'Completed' | 'To Do' | 'In Review' | 'Cancelled';
-    priority: 'High' | 'Medium' | 'Low';
+    priority: 'Urgent' | 'High' | 'Medium' | 'Low';
     due_date: Date;
     project_id: string;
     assignee_id: string;
@@ -48,21 +48,76 @@ export function TaskForm({ initialData, projectId, onSubmit, onCancel, available
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [listAvailableProjects, setListAvailableProjects] = useState(availableProjects);
     const [listAvailableUsers, setListAvailableUsers] = useState(availableUsers);
+    const [isDataLoaded, setIsDataLoaded] = useState(false); // Track if dropdown data is loaded
 
     const isEditing = !!initialData;
-    // When editing and `task` is available, populate form data once
+
+    // Fetch form data (projects and users) first
     useEffect(() => {
-        if (initialData) {
-            setFormData({
-                title: initialData.title || '',
-                status: initialData.status || 'To Do',
-                priority: initialData.priority || 'Medium',
-                due_date: initialData.due_date ? new Date(initialData.due_date) : (undefined as unknown as Date),
-                project_id: initialData.project_id || '',
-                assignee_id: initialData.assignee_id || '',
-            });
+        const fetchFormData = async () => {
+            try {
+                console.log('Fetching form data...'); // Debug log
+                const res = await fetch('/tasks/create-form-data');
+                const data = await res.json();
+                console.log('Form data fetched:', data); // Debug log
+                setListAvailableProjects(data.projects || []);
+                setListAvailableUsers(data.users || []);
+                setIsDataLoaded(true); // Mark data as loaded
+            } catch (error) {
+                console.error('Error fetching form data:', error);
+                // Set empty arrays as fallback
+                setListAvailableProjects([]);
+                setListAvailableUsers([]);
+                setIsDataLoaded(true); // Still mark as loaded even if failed
+            }
+        };
+
+        // Check if we have meaningful data from props
+        const hasProjects = availableProjects && availableProjects.length > 0;
+        const hasUsers = availableUsers && availableUsers.length > 0;
+
+        if (hasProjects && hasUsers) {
+            // Use the data passed as props
+            setListAvailableProjects(availableProjects);
+            setListAvailableUsers(availableUsers);
+            setIsDataLoaded(true);
+        } else {
+            // Fetch data from API only once when component mounts
+            fetchFormData();
         }
-    }, [initialData]);
+    }, []); // Empty dependency array - only run once on mount
+
+    // Populate form data after dropdown data is loaded
+    useEffect(() => {
+        console.log('TaskForm useEffect - initialData:', initialData); // Debug log
+        console.log('TaskForm useEffect - isDataLoaded:', isDataLoaded); // Debug log
+        
+        // Only populate form data after dropdown data is loaded
+        if (isDataLoaded) {
+            if (initialData) {
+                console.log('Populating form with initial data:', initialData);
+                setFormData({
+                    title: initialData.title || '',
+                    status: initialData.status || 'To Do',
+                    priority: initialData.priority || 'Medium',
+                    due_date: initialData.due_date ? new Date(initialData.due_date) : (undefined as unknown as Date),
+                    project_id: initialData.project_id || projectId || '',
+                    assignee_id: initialData.assignee_id || '',
+                });
+            } else {
+                // Reset form when no initial data (creating new task)
+                console.log('Resetting form for new task');
+                setFormData({
+                    title: '',
+                    status: 'To Do',
+                    priority: 'Medium',
+                    due_date: undefined as unknown as Date,
+                    project_id: projectId || '',
+                    assignee_id: '',
+                });
+            }
+        }
+    }, [initialData, projectId, isDataLoaded]); // Wait for data to be loaded
 
     // Validation similar to ProjectForm: gather errors and set them
     const validateForm = () => {
@@ -93,24 +148,10 @@ export function TaskForm({ initialData, projectId, onSubmit, onCancel, available
         }
     };
 
-    useEffect(() => {
-        const fetchFormData = async () => {
-            try {
-                // Change this to fetch from the correct endpoint
-                const res = await fetch('/tasks/create-form-data');
-                const data = await res.json();
-                setListAvailableProjects(data.projects);
-                setListAvailableUsers(data.users);
-            } catch (error) {
-                console.error('Error fetching form data:', error);
-            }
-        };
-
-        // Only fetch if we don't already have the data passed as props
-        if (availableProjects.length === 0 || availableUsers.length === 0) {
-            fetchFormData();
-        }
-    }, [availableProjects.length, availableUsers.length]);
+    // Debug: Log current form data
+    console.log('Current formData:', formData);
+    console.log('Available projects:', listAvailableProjects);
+    console.log('Available users:', listAvailableUsers);
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -179,36 +220,42 @@ export function TaskForm({ initialData, projectId, onSubmit, onCancel, available
                     </div>
                 </div>
 
-                {/* Project Select */}
-                {listAvailableProjects.length > 0 && (
-                    <div className="space-y-2">
-                        <Label className="text-sm font-medium text-zinc-800 dark:text-zinc-200">Project *</Label>
-                        <Select value={formData.project_id} onValueChange={(value) => setFormData({ ...formData, project_id: value })}>
-                            <SelectTrigger className="border-neutral-200 bg-white text-zinc-800 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white">
-                                <SelectValue placeholder="Select project" />
-                            </SelectTrigger>
-                            <SelectContent className="border-neutral-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-                                {listAvailableProjects.map((project) => (
-                                    <SelectItem
-                                        key={project.id}
-                                        value={project.id}
-                                        className="text-zinc-800 focus:bg-zinc-200 dark:text-zinc-100 dark:focus:bg-zinc-800"
-                                    >
-                                        {project.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        {errors.project_id && <p className="text-sm text-red-500">{errors.project_id}</p>}
-                    </div>
-                )}
+                {/* Project Select - Always show, even if empty */}
+                <div className="space-y-2">
+                    <Label className="text-sm font-medium text-zinc-800 dark:text-zinc-200">Project *</Label>
+                    <Select 
+                        value={formData.project_id} 
+                        onValueChange={(value) => setFormData({ ...formData, project_id: value })}
+                        disabled={!isDataLoaded}
+                    >
+                        <SelectTrigger className="border-neutral-200 bg-white text-zinc-800 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white">
+                            <SelectValue placeholder={isDataLoaded ? "Select project" : "Loading projects..."} />
+                        </SelectTrigger>
+                        <SelectContent className="border-neutral-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+                            {listAvailableProjects.map((project) => (
+                                <SelectItem
+                                    key={project.id}
+                                    value={project.id}
+                                    className="text-zinc-800 focus:bg-zinc-200 dark:text-zinc-100 dark:focus:bg-zinc-800"
+                                >
+                                    {project.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    {errors.project_id && <p className="text-sm text-red-500">{errors.project_id}</p>}
+                </div>
 
                 {/* Assignee Select */}
                 <div className="space-y-2">
                     <Label className="text-sm font-medium text-zinc-800 dark:text-zinc-200">Assignee *</Label>
-                    <Select value={formData.assignee_id} onValueChange={(value) => setFormData({ ...formData, assignee_id: value })}>
+                    <Select 
+                        value={formData.assignee_id} 
+                        onValueChange={(value) => setFormData({ ...formData, assignee_id: value })}
+                        disabled={!isDataLoaded}
+                    >
                         <SelectTrigger className="border-neutral-200 bg-white text-zinc-800 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white">
-                            <SelectValue placeholder="Select assignee" />
+                            <SelectValue placeholder={isDataLoaded ? "Select assignee" : "Loading users..."} />
                         </SelectTrigger>
                         <SelectContent className="border-neutral-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
                             {listAvailableUsers.map((user) => (
@@ -231,9 +278,8 @@ export function TaskForm({ initialData, projectId, onSubmit, onCancel, available
                     <Popover>
                         <PopoverTrigger asChild>
                             <Button
+                                type="button"
                                 variant="outline"
-                                role="combobox"
-                                aria-expanded={!!formData.due_date}
                                 className="w-full justify-start border-neutral-200 bg-white text-left text-zinc-800 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white"
                             >
                                 <CalendarIcon className="mr-2 h-4 w-4" />
@@ -261,7 +307,7 @@ export function TaskForm({ initialData, projectId, onSubmit, onCancel, available
                 <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
                     Cancel
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
+                <Button type="submit" disabled={isSubmitting || !isDataLoaded}>
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     {isEditing ? 'Update Task' : 'Create Task'}
                 </Button>

@@ -21,12 +21,12 @@ type Task = {
     id: string;
     title: string;
     status: 'In Progress' | 'Completed' | 'To Do' | 'In Review' | 'Cancelled';
-    priority: 'High' | 'Medium' | 'Low'; // Note: Capital P to match your schema
+    priority: 'Urgent' | 'High' | 'Medium' | 'Low'; // Added 'Urgent' to match TaskModal
     due_date: string;
     project_id: string;
     assignee_id: string;
-    project: { name: string };
-    assignee: { name: string };
+    project: { id: string; name: string };
+    assignee: { id: string; name: string };
 };
 
 export default function Index() {
@@ -47,12 +47,12 @@ export default function Index() {
     const handleSubmit = async (data: {
         title: string;
         status: 'In Progress' | 'Completed' | 'To Do' | 'In Review' | 'Cancelled';
-        priority: 'High' | 'Medium' | 'Low'; // Note: Capital P to match your schema
+        priority: 'Urgent' | 'High' | 'Medium' | 'Low';
         due_date: Date;
         project_id: string;
         assignee_id: string;
     }) => {
-        console.log('Submitting task data:', data); // Debug log
+        console.log('Submitting task data:', data);
         try {
             const payload = {
                 ...data,
@@ -61,7 +61,6 @@ export default function Index() {
 
             let response;
             if (selectedTask) {
-                // Add validation to ensure we have a valid ID
                 if (!selectedTask.id) {
                     throw new Error('Task ID is required for updates');
                 }
@@ -74,16 +73,14 @@ export default function Index() {
                 console.log('Create response:', response.data);
             }
 
-            // Show success message
             alert(response.data.message || 'Operation completed successfully');
-
-            // Refresh the project list after submission
             await refreshTaskList();
 
-            // Reset state after submission
+            // FIXED: Reset state after submission
             setIsModalOpen(false);
-            setSelectedTask(null);
+            setSelectedTask(null); // This is crucial for clearing the form
         } catch (error) {
+            // Error handling remains the same...
             console.error('Submit error:', error);
             const err = error as AxiosError<{ errors?: Record<string, string[]>; message?: string }>;
 
@@ -105,13 +102,37 @@ export default function Index() {
         }
     };
 
+    // const handleEdit = (task: Task) => {
+    //     console.log('Editing task:', task); // Debug log
+    //     if (!task || !task.id) {
+    //         console.error('Invalid task data for editing:', task);
+    //         alert('Error: Invalid task data');
+    //         return;
+    //     }
+    //     setSelectedTask(task);
+    //     setIsModalOpen(true);
+    // };
+
     const handleEdit = (task: Task) => {
-        console.log('Editing task:', task); // Debug log
+        console.log('=== EDIT TASK DEBUG ===');
+        console.log('Full task object:', task);
+        console.log('Task project:', task.project);
+        console.log('Task assignee:', task.assignee);
+
         if (!task || !task.id) {
             console.error('Invalid task data for editing:', task);
             alert('Error: Invalid task data');
             return;
         }
+
+        // Extract IDs from nested objects
+        const projectId = task.project?.id || task.project_id || '';
+        const assigneeId = task.assignee?.id || task.assignee_id || '';
+
+        console.log('Extracted project_id:', projectId);
+        console.log('Extracted assignee_id:', assigneeId);
+        console.log('=======================');
+
         setSelectedTask(task);
         setIsModalOpen(true);
     };
@@ -252,7 +273,10 @@ export default function Index() {
 
                 <TaskModal
                     open={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
+                    onClose={() => {
+                        setIsModalOpen(false);
+                        setSelectedTask(null); // Clear selected task when closing
+                    }}
                     onSubmit={handleSubmit}
                     initialData={
                         selectedTask
@@ -262,8 +286,8 @@ export default function Index() {
                                   priority: selectedTask.priority,
                                   due_date: new Date(selectedTask.due_date),
                                   // Fix: Extract the ID from the nested object
-                                  project_id: selectedTask.project_id,
-                                  assignee_id: selectedTask.assignee_id,
+                                  project_id: selectedTask.project?.id || selectedTask.project_id || '',
+                                  assignee_id: selectedTask.assignee?.id || selectedTask.assignee_id || '',
                               }
                             : undefined
                     }

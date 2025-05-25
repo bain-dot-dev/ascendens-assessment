@@ -9,12 +9,12 @@ type Task = {
     id: string;
     title: string;
     status: 'In Progress' | 'Completed' | 'To Do' | 'In Review' | 'Cancelled';
-    priority: 'High' | 'Medium' | 'Low';
+    priority: 'Urgent' | 'High' | 'Medium' | 'Low';
     due_date: string;
     project_id: string;
     assignee_id: string;
-    project: { name: string };
-    assignee: { name: string };
+    project: { id: string; name: string };
+    assignee: { id: string; name: string };
 };
 
 export function TaskTable({ tasks = [], onEdit, onDelete }: { tasks?: Task[]; onEdit: (task: Task) => void; onDelete: (id: string) => void }) {

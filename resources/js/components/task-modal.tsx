@@ -8,7 +8,7 @@ interface TaskModalProps {
     onSubmit: (data: {
         title: string;
         status: 'In Progress' | 'Completed' | 'To Do' | 'In Review' | 'Cancelled';
-        priority: 'High' | 'Medium' | 'Low';
+        priority: 'Urgent' | 'High' | 'Medium' | 'Low';
         due_date: Date;
         project_id: string;
         assignee_id: string;
@@ -19,7 +19,7 @@ interface TaskModalProps {
     initialData?: {
         title: string;
         status: 'In Progress' | 'Completed' | 'To Do' | 'In Review' | 'Cancelled';
-        priority: 'High' | 'Medium' | 'Low';
+        priority: 'Urgent' |'High' | 'Medium' | 'Low';
         due_date: Date;
         project_id: string;
         assignee_id: string;
