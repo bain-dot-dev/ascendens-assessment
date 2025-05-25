@@ -87,7 +87,11 @@ export function ProjectList({
                                             ? 'border-green-500 text-green-500'
                                             : project.status === 'In Progress'
                                               ? 'border-amber-500 text-amber-500'
-                                              : 'border-blue-500 text-blue-500'
+                                              : project.status === 'On Hold'
+                                                ? 'border-purple-500 text-purple-500'
+                                                : project.status === 'Cancelled'
+                                                  ? 'border-red-500 text-red-500'
+                                                  : 'border-blue-500 text-blue-500'
                                     }`}
                                 >
                                     {project.status}
@@ -111,10 +115,10 @@ export function ProjectList({
                                 <span className="text-xs text-zinc-600 dark:text-zinc-400">
                                     Due{' '}
                                     {new Date(project.due_date).toLocaleDateString('en-US', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric',
-                                })}
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric',
+                                    })}
                                 </span>
                             </div>
                         </div>

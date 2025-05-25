@@ -12,15 +12,19 @@ class ProjectController extends Controller
     public function index()
     {
         $projects = Project::with('tasks', 'members')->get()->map(function ($project) {
+            $completed = $project->tasks->where('status', 'Completed')->count();
+            $total = $project->tasks->count();
+            
             return [
                 'id' => $project->id,
                 'name' => $project->name,
                 'description' => $project->description,
                 'status' => $project->status,
                 'tasks' => [
-                    'completed' => $project->tasks->where('completed', true)->count(),
-                    'total' => $project->tasks->count(),
+                    'completed' => $completed,
+                    'total' => $total,
                 ],
+                'progress' => $total > 0 ? round(($completed / $total) * 100) : 0,
                 'members' => $project->members->map(fn ($m) => ['initials' => $m->initials])->toArray(),
                 'due_date' => $project->due_date ? $project->due_date->toDateString() : null,
             ];
@@ -64,7 +68,7 @@ class ProjectController extends Controller
                 'description' => $project->description,
                 'status' => $project->status,
                 'tasks' => [
-                    'completed' => $project->tasks->where('completed', true)->count(),
+                    'completed' => $project->tasks->where('status', 'Completed')->count(),
                     'total' => $project->tasks->count(),
                 ],
                 'members' => $project->members->map(fn ($m) => ['initials' => $m->initials])->toArray(),
@@ -111,7 +115,7 @@ class ProjectController extends Controller
                 'description' => $project->description,
                 'status' => $project->status,
                 'tasks' => [
-                    'completed' => $project->tasks->where('completed', true)->count(),
+                    'completed' => $project->tasks->where('status', 'Completed')->count(),
                     'total' => $project->tasks->count(),
                 ],
                 'members' => $project->members->map(fn ($m) => ['initials' => $m->initials])->toArray(),
@@ -148,6 +152,8 @@ class ProjectController extends Controller
     public function show(Project $project)
     {
         $project->load('tasks', 'members');
+            $completed = $project->tasks->where('status', 'Completed')->count();
+            $total = $project->tasks->count();
         
         $formattedProject = [
             'id' => $project->id,
@@ -155,9 +161,10 @@ class ProjectController extends Controller
             'description' => $project->description,
             'status' => $project->status,
             'tasks' => [
-                'completed' => $project->tasks->where('completed', true)->count(),
-                'total' => $project->tasks->count(),
+                'completed' => $completed,
+                'total' => $total,
             ],
+            'progress' => $total > 0 ? round(($completed / $total) * 100) : 0,
             'members' => $project->members->map(fn ($m) => ['initials' => $m->initials])->toArray(),
             'due_date' => $project->due_date ? $project->due_date->toDateString() : null,
         ];
