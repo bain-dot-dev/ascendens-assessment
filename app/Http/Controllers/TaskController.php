@@ -174,4 +174,36 @@ class TaskController extends Controller
         'users' => $users,
     ]);
 }
+
+    public function stats()
+{
+    $now = now();
+
+    $completed = Task::where('status', 'Completed')->count();
+    $inReview = Task::where('status', 'In Review')->count();
+    $inProgress = Task::where('status', 'In Progress')->count();
+    $overdue = Task::where('due_date', '<', $now)
+                   ->where('status', '!=', 'Completed')
+                   ->count();
+
+    return response()->json([
+        'completed' => $completed,
+        'inReview' => $inReview,
+        'inProgress' => $inProgress,
+        'overdue' => $overdue,
+    ]);
+}
+
+ public function upcoming()
+    {
+        $today = Carbon::today();
+
+        // Fetch tasks with due_date today or later, ordered by due_date ascending
+        $tasks = Task::whereDate('due_date', '>=', $today)
+                     ->orderBy('due_date', 'asc')
+                     ->get();
+
+        return response()->json($tasks);
+    }
+
 }

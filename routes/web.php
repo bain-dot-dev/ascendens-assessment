@@ -39,6 +39,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/tasks/{task}', [TaskController::class, 'update']);
     Route::delete('/tasks/{task}', [TaskController::class, 'destroy']);
     Route::get('/tasks/create-form-data', [TaskController::class, 'createFormData']);
+    Route::get('/task-stats', [TaskController::class, 'stats']);
+    Route::get('/upcoming-tasks', [TaskController::class, 'upcoming']);
+    
     Route::resource('tasks', TaskController::class);
 });
 
