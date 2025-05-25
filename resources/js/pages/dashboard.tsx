@@ -1,4 +1,4 @@
-import { RecentActivity } from '@/components/recent-activity';
+// import { RecentActivity } from '@/components/recent-activity';
 import { TaskList } from '@/components/task-list';
 import { TaskStats } from '@/components/task-stats';
 import { UpcomingTasks } from '@/components/upcoming-tasks';
@@ -18,12 +18,12 @@ export default function Dashboard() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
             <div className="space-y-6 p-6">
-                <div className="grid auto-rows-min gap-4 md:grid-cols-3">
+                <div className="grid auto-rows-min gap-4 md:grid-cols-2">
                     <TaskStats />
 
                     <UpcomingTasks />
 
-                    <RecentActivity />
+                    {/* <RecentActivity /> */}
                 </div>
 
                 <div className="rounded-lg bg-neutral-100 p-6 dark:border-zinc-800 dark:bg-zinc-900">

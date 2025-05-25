@@ -20,6 +20,7 @@ type Task = {
 export function TaskTable({ tasks = [], onEdit, onDelete }: { tasks?: Task[]; onEdit: (task: Task) => void; onDelete: (id: string) => void }) {
     console.log(tasks);
     const safeTasks = Array.isArray(tasks) ? tasks : [];
+    
     return (
         <div className="rounded-md border border-neutral-200 dark:border-zinc-800">
             <Table>

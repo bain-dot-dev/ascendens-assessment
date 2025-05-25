@@ -9,6 +9,8 @@ use Illuminate\Support\Str;
 use Inertia\Inertia;
 use App\Models\Project;
 use App\Models\User;
+use Carbon\Carbon;
+
 
 class TaskController extends Controller
 {
@@ -39,6 +41,7 @@ class TaskController extends Controller
         return Inertia::render('Tasks/Index', [
             'tasks' => $tasks,
         ]);
+        
     }
 
   public function store(Request $request)
@@ -201,7 +204,9 @@ class TaskController extends Controller
         // Fetch tasks with due_date today or later, ordered by due_date ascending
         $tasks = Task::whereDate('due_date', '>=', $today)
                      ->orderBy('due_date', 'asc')
+                     ->limit(4)
                      ->get();
+                     
 
         return response()->json($tasks);
     }
