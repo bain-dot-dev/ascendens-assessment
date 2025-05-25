@@ -1,6 +1,8 @@
 'use client';
 
-import type React from 'react';
+import { format } from 'date-fns';
+import { CalendarIcon, Loader2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -8,20 +10,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { format } from 'date-fns';
-import { CalendarIcon, Loader2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+
+export interface TaskFormData {
+    title: string;
+    status: 'In Progress' | 'Completed' | 'To Do' | 'In Review' | 'Cancelled';
+    priority: 'High' | 'Medium' | 'Low';
+    due_date: Date;
+    project_id: string;
+    assignee_id: string;
+}
 
 interface TaskFormProps {
-    task?: {
-        id: string;
-        title: string;
-        status: string;
-        Priority: string;
-        due_date: Date | undefined;
-        project_id: string;
-        assignee_id: string;
-    };
+    initialData?: TaskFormData;
     projectId?: string;
     onSubmit: (data: TaskFormData) => Promise<void>;
     onCancel: () => void;
@@ -30,68 +30,53 @@ interface TaskFormProps {
     isEditing?: boolean;
 }
 
-interface TaskFormData {
-    title: string;
-    status: string;
-    Priority: string;
-    due_date: Date | undefined;
-    project_id: string;
-    assignee_id: string;
-}
-
 const statusOptions = ['To Do', 'In Progress', 'In Review', 'Completed', 'Cancelled'];
-
 const priorityOptions = ['Low', 'Medium', 'High', 'Urgent'];
 
-export function TaskForm({ task, projectId, onSubmit, onCancel, availableProjects = [], availableUsers = [], isEditing = false }: TaskFormProps) {
+export function TaskForm({ initialData, projectId, onSubmit, onCancel, availableProjects = [], availableUsers = [] }: TaskFormProps) {
+    // Initialize form data state with empty/default values or projectId if passed
     const [formData, setFormData] = useState<TaskFormData>({
         title: '',
         status: 'To Do',
-        Priority: 'Medium',
-        due_date: undefined,
+        priority: 'Medium',
+        due_date: undefined as unknown as Date,
         project_id: projectId || '',
         assignee_id: '',
     });
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [errors, setErrors] = useState<Record<string, string>>({});
 
-    // Initialize form data when editing
+    const [errors, setErrors] = useState<Record<string, string>>({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [listAvailableProjects, setListAvailableProjects] = useState(availableProjects);
+    const [listAvailableUsers, setListAvailableUsers] = useState(availableUsers);
+
+    const isEditing = !!initialData;
+    // When editing and `task` is available, populate form data once
     useEffect(() => {
-        if (task && isEditing) {
+        if (initialData) {
             setFormData({
-                title: task.title,
-                status: task.status,
-                Priority: task.Priority,
-                due_date: task.due_date ? new Date(task.due_date) : undefined,
-                project_id: task.project_id,
-                assignee_id: task.assignee_id,
+                title: initialData.title || '',
+                status: initialData.status || 'To Do',
+                priority: initialData.priority || 'Medium',
+                due_date: initialData.due_date ? new Date(initialData.due_date) : (undefined as unknown as Date),
+                project_id: initialData.project_id || '',
+                assignee_id: initialData.assignee_id || '',
             });
         }
-    }, [task, isEditing]);
+    }, [initialData]);
 
+    // Validation similar to ProjectForm: gather errors and set them
     const validateForm = () => {
         const newErrors: Record<string, string> = {};
-
-        if (!formData.title.trim()) {
-            newErrors.title = 'Task title is required';
-        }
-
-        if (!formData.project_id) {
-            newErrors.project_id = 'Project is required';
-        }
-
-        if (!formData.assignee_id) {
-            newErrors.assignee_id = 'Assignee is required';
-        }
-
-        if (!formData.due_date) {
-            newErrors.due_date = 'Due date is required';
-        }
+        if (!formData.title.trim()) newErrors.title = 'Task title is required';
+        if (!formData.project_id) newErrors.project_id = 'Project is required';
+        if (!formData.assignee_id) newErrors.assignee_id = 'Assignee is required';
+        if (!formData.due_date) newErrors.due_date = 'Due date is required';
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
+    // Handle submit event similar to ProjectForm
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -100,6 +85,7 @@ export function TaskForm({ task, projectId, onSubmit, onCancel, availableProject
         setIsSubmitting(true);
         try {
             await onSubmit(formData);
+            console.log('Task submitted successfully:', formData);
         } catch (error) {
             console.error(`Error ${isEditing ? 'updating' : 'creating'} task:`, error);
         } finally {
@@ -107,9 +93,29 @@ export function TaskForm({ task, projectId, onSubmit, onCancel, availableProject
         }
     };
 
+    useEffect(() => {
+        const fetchFormData = async () => {
+            try {
+                // Change this to fetch from the correct endpoint
+                const res = await fetch('/tasks/create-form-data');
+                const data = await res.json();
+                setListAvailableProjects(data.projects);
+                setListAvailableUsers(data.users);
+            } catch (error) {
+                console.error('Error fetching form data:', error);
+            }
+        };
+
+        // Only fetch if we don't already have the data passed as props
+        if (availableProjects.length === 0 || availableUsers.length === 0) {
+            fetchFormData();
+        }
+    }, [availableProjects.length, availableUsers.length]);
+
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-4">
+                {/* Title Input */}
                 <div className="space-y-2">
                     <Label htmlFor="title" className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
                         Task Title *
@@ -124,10 +130,14 @@ export function TaskForm({ task, projectId, onSubmit, onCancel, availableProject
                     {errors.title && <p className="text-sm text-red-500">{errors.title}</p>}
                 </div>
 
+                {/* Status & Priority */}
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label className="text-sm font-medium text-zinc-800 dark:text-zinc-200">Status</Label>
-                        <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+                        <Select
+                            value={formData.status}
+                            onValueChange={(value) => setFormData({ ...formData, status: value as TaskFormData['status'] })}
+                        >
                             <SelectTrigger className="border-neutral-200 bg-white text-zinc-800 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white">
                                 <SelectValue placeholder="Select status" />
                             </SelectTrigger>
@@ -147,7 +157,10 @@ export function TaskForm({ task, projectId, onSubmit, onCancel, availableProject
 
                     <div className="space-y-2">
                         <Label className="text-sm font-medium text-zinc-800 dark:text-zinc-200">Priority</Label>
-                        <Select value={formData.Priority} onValueChange={(value) => setFormData({ ...formData, Priority: value })}>
+                        <Select
+                            value={formData.priority}
+                            onValueChange={(value) => setFormData({ ...formData, priority: value as TaskFormData['priority'] })}
+                        >
                             <SelectTrigger className="border-neutral-200 bg-white text-zinc-800 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white">
                                 <SelectValue placeholder="Select priority" />
                             </SelectTrigger>
@@ -166,7 +179,8 @@ export function TaskForm({ task, projectId, onSubmit, onCancel, availableProject
                     </div>
                 </div>
 
-                {availableProjects.length > 0 && (
+                {/* Project Select */}
+                {listAvailableProjects.length > 0 && (
                     <div className="space-y-2">
                         <Label className="text-sm font-medium text-zinc-800 dark:text-zinc-200">Project *</Label>
                         <Select value={formData.project_id} onValueChange={(value) => setFormData({ ...formData, project_id: value })}>
@@ -174,8 +188,12 @@ export function TaskForm({ task, projectId, onSubmit, onCancel, availableProject
                                 <SelectValue placeholder="Select project" />
                             </SelectTrigger>
                             <SelectContent className="border-neutral-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-                                {availableProjects.map((project) => (
-                                    <SelectItem key={project.id} value={project.id} className="text-zinc-100 focus:bg-zinc-800">
+                                {listAvailableProjects.map((project) => (
+                                    <SelectItem
+                                        key={project.id}
+                                        value={project.id}
+                                        className="text-zinc-800 focus:bg-zinc-200 dark:text-zinc-100 dark:focus:bg-zinc-800"
+                                    >
                                         {project.name}
                                     </SelectItem>
                                 ))}
@@ -185,6 +203,7 @@ export function TaskForm({ task, projectId, onSubmit, onCancel, availableProject
                     </div>
                 )}
 
+                {/* Assignee Select */}
                 <div className="space-y-2">
                     <Label className="text-sm font-medium text-zinc-800 dark:text-zinc-200">Assignee *</Label>
                     <Select value={formData.assignee_id} onValueChange={(value) => setFormData({ ...formData, assignee_id: value })}>
@@ -192,8 +211,12 @@ export function TaskForm({ task, projectId, onSubmit, onCancel, availableProject
                             <SelectValue placeholder="Select assignee" />
                         </SelectTrigger>
                         <SelectContent className="border-neutral-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-                            {availableUsers.map((user) => (
-                                <SelectItem key={user.id} value={user.id} className="text-zinc-100 focus:bg-zinc-800">
+                            {listAvailableUsers.map((user) => (
+                                <SelectItem
+                                    key={user.id}
+                                    value={user.id}
+                                    className="text-zinc-800 focus:bg-zinc-200 dark:text-zinc-100 dark:focus:bg-zinc-800"
+                                >
                                     {user.name} ({user.email})
                                 </SelectItem>
                             ))}
@@ -202,25 +225,30 @@ export function TaskForm({ task, projectId, onSubmit, onCancel, availableProject
                     {errors.assignee_id && <p className="text-sm text-red-500">{errors.assignee_id}</p>}
                 </div>
 
+                {/* Due Date Picker */}
                 <div className="space-y-2">
                     <Label className="text-sm font-medium text-zinc-800 dark:text-zinc-200">Due Date *</Label>
                     <Popover>
                         <PopoverTrigger asChild>
                             <Button
                                 variant="outline"
-                                className="w-full justify-start border-neutral-200 bg-white text-left font-normal text-zinc-800 hover:bg-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800"
+                                role="combobox"
+                                aria-expanded={!!formData.due_date}
+                                className="w-full justify-start border-neutral-200 bg-white text-left text-zinc-800 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white"
                             >
                                 <CalendarIcon className="mr-2 h-4 w-4" />
-                                {formData.due_date ? format(formData.due_date, 'PPP') : <span>Pick a date</span>}
+                                {formData.due_date ? format(formData.due_date, 'PPP') : 'Pick a due date'}
                             </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto border-neutral-200 bg-zinc-100 p-0 dark:border-zinc-800 dark:bg-zinc-900" align="start">
+                        <PopoverContent className="w-auto p-0" align="start">
                             <Calendar
                                 mode="single"
                                 selected={formData.due_date}
-                                onSelect={(date) => setFormData({ ...formData, due_date: date })}
+                                onSelect={(date) => {
+                                    if (date) setFormData({ ...formData, due_date: date });
+                                }}
+                                disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
                                 initialFocus
-                                className="bg-white dark:bg-zinc-900"
                             />
                         </PopoverContent>
                     </Popover>
@@ -228,22 +256,14 @@ export function TaskForm({ task, projectId, onSubmit, onCancel, availableProject
                 </div>
             </div>
 
-            <div className="flex gap-3 pt-4">
-                <Button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="flex-1 bg-zinc-800 text-zinc-100 hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
-                >
+            {/* Form actions */}
+            <div className="flex justify-end space-x-2 pt-4">
+                <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+                    Cancel
+                </Button>
+                <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     {isEditing ? 'Update Task' : 'Create Task'}
-                </Button>
-                <Button
-                    type="button"
-                    variant="outline"
-                    onClick={onCancel}
-                    className="flex-1 border-neutral-200 text-zinc-800 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                >
-                    Cancel
                 </Button>
             </div>
         </form>

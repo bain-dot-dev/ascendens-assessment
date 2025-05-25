@@ -10,6 +10,11 @@ class Task extends Model
 {
     use HasFactory, HasUuids;
 
+    protected $casts = [
+    'due_date' => 'date',
+];
+
+
     protected $fillable = [
         'title',
         'status',

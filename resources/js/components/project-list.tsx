@@ -32,7 +32,7 @@ export function ProjectList({
     onDelete: (id: string) => void;
 }) {
     console.log(projects);
-const safeProjects = Array.isArray(projects) ? projects : [];
+    const safeProjects = Array.isArray(projects) ? projects : [];
     return (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {(safeProjects ?? []).map((project) => (
@@ -110,9 +110,11 @@ const safeProjects = Array.isArray(projects) ? projects : [];
                                 </div>
                                 <span className="text-xs text-zinc-600 dark:text-zinc-400">
                                     Due{' '}
-                                    {project.due_date && !isNaN(Date.parse(project.due_date))
-                                        ? new Date(project.due_date).toLocaleDateString()
-                                        : 'N/A'}
+                                    {new Date(project.due_date).toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric',
+                                })}
                                 </span>
                             </div>
                         </div>

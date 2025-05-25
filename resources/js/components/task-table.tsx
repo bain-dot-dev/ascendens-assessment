@@ -5,55 +5,21 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Edit, MoreHorizontal, Trash } from 'lucide-react';
 
-export function TaskTable() {
-    const tasks = [
-        {
-            id: 1,
-            title: 'Redesign landing page',
-            status: 'In Progress',
-            priority: 'High',
-            due_date: 'May 24, 2025',
-            project: 'Website Redesign',
-            assignee: 'Alex S.',
-        },
-        {
-            id: 2,
-            title: 'Create user onboarding flow',
-            status: 'To Do',
-            priority: 'Medium',
-            due_date: 'May 26, 2025',
-            project: 'Mobile App',
-            assignee: 'Taylor J.',
-        },
-        {
-            id: 3,
-            title: 'Update documentation',
-            status: 'Completed',
-            priority: 'Low',
-            due_date: 'May 22, 2025',
-            project: 'Documentation',
-            assignee: 'Jordan L.',
-        },
-        {
-            id: 4,
-            title: 'Fix navigation bug',
-            status: 'To Do',
-            priority: 'High',
-            due_date: 'May 23, 2025',
-            project: 'Website Redesign',
-            assignee: 'Alex S.',
-        },
-        {
-            id: 5,
-            title: 'Implement authentication',
-            status: 'In Progress',
-            priority: 'High',
-            due_date: 'May 25, 2025',
-            project: 'Mobile App',
-            assignee: 'Taylor J.',
-        },
-    ];
+type Task = {
+    id: string;
+    title: string;
+    status: 'In Progress' | 'Completed' | 'To Do' | 'In Review' | 'Cancelled';
+    priority: 'High' | 'Medium' | 'Low';
+    due_date: string;
+    project_id: string;
+    assignee_id: string;
+    project: { name: string };
+    assignee: { name: string };
+};
 
+export function TaskTable({ tasks = [], onEdit, onDelete }: { tasks?: Task[]; onEdit: (task: Task) => void; onDelete: (id: string) => void }) {
+    console.log(tasks);
+    const safeTasks = Array.isArray(tasks) ? tasks : [];
     return (
         <div className="rounded-md border border-neutral-200 dark:border-zinc-800">
             <Table>
@@ -72,7 +38,7 @@ export function TaskTable() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {tasks.map((task) => (
+                    {(safeTasks ?? []).map((task) => (
                         <TableRow key={task.id} className="border-neutral-300 hover:bg-neutral-200 dark:border-zinc-800 dark:hover:bg-zinc-950">
                             <TableCell>
                                 <Checkbox />
@@ -106,9 +72,15 @@ export function TaskTable() {
                                     {task.priority}
                                 </Badge>
                             </TableCell>
-                            <TableCell className="text-zinc-800 dark:text-zinc-400">{task.due_date}</TableCell>
-                            <TableCell className="text-zinc-800 dark:text-zinc-400">{task.project}</TableCell>
-                            <TableCell className="text-zinc-800 dark:text-zinc-400">{task.assignee}</TableCell>
+                            <TableCell className="text-zinc-800 dark:text-zinc-400">
+                                {new Date(task.due_date).toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric',
+                                })}
+                            </TableCell>
+                            <TableCell className="text-zinc-800 dark:text-zinc-400">{task.project.name}</TableCell>
+                            <TableCell className="text-zinc-800 dark:text-zinc-400">{task.assignee.name}</TableCell>
                             <TableCell>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
@@ -118,11 +90,14 @@ export function TaskTable() {
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="border-neutral-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-                                        <DropdownMenuItem className="text-zinc-400 focus:bg-zinc-800 focus:text-white">
+                                        <DropdownMenuItem onClick={() => onEdit(task)} className="text-zinc-400 focus:bg-zinc-800 focus:text-white">
                                             <Edit className="mr-2 h-4 w-4" />
                                             Edit
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem className="text-red-500 focus:bg-zinc-800 focus:text-red-500">
+                                        <DropdownMenuItem
+                                            onClick={() => onDelete(task.id)}
+                                            className="text-red-500 focus:bg-zinc-800 focus:text-red-500"
+                                        >
                                             <Trash className="mr-2 h-4 w-4" />
                                             Delete
                                         </DropdownMenuItem>
