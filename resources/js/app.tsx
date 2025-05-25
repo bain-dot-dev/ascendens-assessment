@@ -7,6 +7,18 @@ import { initializeTheme } from './hooks/use-appearance';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
+import axios from 'axios';
+
+// Grab CSRF token from meta tag in your HTML
+const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+if (token) {
+  axios.defaults.headers.common['X-CSRF-TOKEN'] = token;
+} else {
+  console.error('CSRF token not found in meta tag');
+}
+
+
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
     resolve: (name) => resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob('./pages/**/*.tsx')),

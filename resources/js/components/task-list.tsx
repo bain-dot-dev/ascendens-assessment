@@ -10,7 +10,7 @@ export function TaskList() {
             id: 1,
             title: 'Redesign landing page',
             completed: false,
-            dueDate: 'May 24, 2025',
+            due_date: 'May 24, 2025',
             tags: ['Design', 'Website'],
             comments: 5,
             priority: 'High',
@@ -19,7 +19,7 @@ export function TaskList() {
             id: 2,
             title: 'Create user onboarding flow',
             completed: false,
-            dueDate: 'May 26, 2025',
+            due_date: 'May 26, 2025',
             tags: ['UX', 'Design'],
             comments: 3,
             priority: 'Medium',
@@ -28,7 +28,7 @@ export function TaskList() {
             id: 3,
             title: 'Update documentation',
             completed: true,
-            dueDate: 'May 22, 2025',
+            due_date: 'May 22, 2025',
             tags: ['Documentation'],
             comments: 0,
             priority: 'Low',
@@ -37,7 +37,7 @@ export function TaskList() {
             id: 4,
             title: 'Fix navigation bug',
             completed: false,
-            dueDate: 'May 23, 2025',
+            due_date: 'May 23, 2025',
             tags: ['Bug', 'Frontend'],
             comments: 2,
             priority: 'High',
@@ -62,7 +62,7 @@ export function TaskList() {
                         key={task.id}
                         className={`rounded-lg border p-4 ${
                             task.completed
-                                ? 'border-neutral-300 bg-neutral-200/50 dark:border-zinc-800 dark:bg-zinc-900/50'
+                                ? 'border-neutral-300 bg-neutral-2 00/50 dark:border-zinc-800 dark:bg-zinc-900/50'
                                 : 'bg-neutral-100 dark:border-zinc-800 dark:bg-zinc-900'
                         }`}
                     >
@@ -83,7 +83,7 @@ export function TaskList() {
                                     <div className="flex items-center space-x-3 text-xs text-zinc-600 dark:text-zinc-500">
                                         <div className="flex items-center">
                                             <Calendar className="mr-1 h-3 w-3" />
-                                            {task.dueDate}
+                                            {task.due_date}
                                         </div>
                                         <div className="flex items-center">
                                             <MessageSquare className="mr-1 h-3 w-3" />

@@ -22,8 +22,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Route::get('/tasks/{task}/edit', [TaskController::class, 'edit'])->name('tasks.edit');
     // Route::put('/tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
     // Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
-    Route::get('/projects', [ProjectController::class, 'index'])->name('projects.index');
-    Route::get('/projects/create', [ProjectController::class, 'create'])->name('projects.create');
+    // Route::get('/projects', [ProjectController::class, 'index'])->name('projects.index');
+    // Route::get('/projects/create', [ProjectController::class, 'create'])->name('projects.create');
+    // Route::resource('projects', ProjectController::class);
+    // Route::get('/projects/{project}/members', [ProjectController::class, 'members'])->name('projects.members');
+
+    Route::resource('projects', ProjectController::class);
+    Route::get('/projects', [ProjectController::class, 'index']);
+    Route::post('/projects', [ProjectController::class, 'store']);
+    Route::put('/projects/{project}', [ProjectController::class, 'update']);
+    Route::delete('/projects/{project}', [ProjectController::class, 'destroy']);
 });
 
 require __DIR__.'/settings.php';
