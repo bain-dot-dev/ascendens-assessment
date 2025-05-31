@@ -12,9 +12,44 @@ interface UserMenuContentProps {
 export function UserMenuContent({ user }: UserMenuContentProps) {
     const cleanup = useMobileNavigation();
 
-    const handleLogout = () => {
+    // const handleLogout = () => {
+    //     cleanup();
+    //     router.flushAll();
+    // };
+
+    // const handleLogout = async (e: React.MouseEvent) => {
+    //     e.preventDefault();
+    //     cleanup();
+
+    //     await router.post(
+    //         route('logout'),
+    //         {},
+    //         {
+    //             onSuccess: async () => {
+    //                 const res = await axios.get('/csrf-token');
+    //                 const token = res.data.token;
+
+    //                 axios.defaults.headers.common['X-CSRF-TOKEN'] = token;
+    //                 document.querySelector('meta[name="csrf-token"]')?.setAttribute('content', token);
+    //             },
+    //         },
+    //     );
+    // };
+
+    const handleLogout = async (e: React.MouseEvent) => {
+        e.preventDefault();
+
         cleanup();
-        router.flushAll();
+
+        await router.post(
+            route('logout'),
+            {},
+            {
+                onSuccess: async () => {
+                    window.location.reload();
+                },
+            },
+        );
     };
 
     return (
@@ -35,10 +70,14 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-                <Link className="block w-full" method="post" href={route('logout')} as="button" onClick={handleLogout}>
+                {/* <Link className="block w-full" method="post" href={route('logout')} as="button" onClick={handleLogout}>
                     <LogOut className="mr-2" />
                     Log out
-                </Link>
+                </Link> */}
+                <button onClick={handleLogout} className="block w-full">
+                    <LogOut className="mr-2" />
+                    Log out
+                </button>
             </DropdownMenuItem>
         </>
     );

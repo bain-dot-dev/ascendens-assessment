@@ -43,6 +43,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/upcoming-tasks', [TaskController::class, 'upcoming']);
     
     Route::resource('tasks', TaskController::class);
+
+    Route::get('/csrf-token', function () {
+    return response()->json(['token' => csrf_token()]);
+});
 });
 
 require __DIR__.'/settings.php';

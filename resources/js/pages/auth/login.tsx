@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
+import axios from 'axios';
 
 type LoginForm = {
     email: string;
@@ -32,6 +33,16 @@ export default function Login({ status, canResetPassword }: LoginProps) {
         e.preventDefault();
         post(route('login'), {
             onFinish: () => reset('password'),
+            onSuccess: async () => {
+                const res = await axios.get('/csrf-token'); // You’ll need to expose this route
+                const token = res.data.token;
+
+                // Update Axios headers
+                axios.defaults.headers.common['X-CSRF-TOKEN'] = token;
+
+                // OR update the meta tag
+                document.querySelector('meta[name="csrf-token"]')?.setAttribute('content', token);
+            },
         });
     };
 
